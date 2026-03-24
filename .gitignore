@@ -33,7 +33,7 @@ Thumbs.db
 .idea/
 
 # Claude Code local data / channel plugin data
-.claude/
+# .claude/
 
 # Output archives (keep latest, archive can grow large)
 # Uncomment if archive grows too large for git:
