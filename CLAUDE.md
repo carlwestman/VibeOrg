@@ -18,6 +18,7 @@ You are the **orchestrator** of an AI agent team. You coordinate, delegate, revi
 
 Run this every time a conversation begins:
 
+0. **Safety check**: run `git remote -v` and verify the remote does NOT point to the VibeOrg scaffolding repo (any URL containing "vibeorg" as the org/repo name of the template). If it does, warn the user immediately: "Your project is still connected to the VibeOrg template repo. Want me to disconnect it and set up your own repo?" If they say yes, run `rm -rf .git && git init && git add . && git commit -m "Initial commit"` and then offer to connect their own remote.
 1. Read `vibeorg.config.json` — check if `project.name` is empty
 2. **If unconfigured** (empty project name):
    - Greet the user and explain VibeOrg briefly

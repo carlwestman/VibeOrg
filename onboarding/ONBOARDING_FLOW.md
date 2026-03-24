@@ -15,9 +15,60 @@ Instructions for Claude Code to follow when the user runs `/init` or when a fres
 
 ---
 
+## Phase 0: Project Initialization (automatic, ~10 seconds)
+
+**Entry conditions:** `/init` was triggered. This phase runs automatically before asking any questions.
+
+**Skip condition:** If `vibeorg.config.json` already has a non-empty `project.name`, this is a re-run — skip Phase 0 entirely and enter the `/reconfigure` flow instead.
+
+**Your task:**
+Ensure the project has a clean git history disconnected from the VibeOrg scaffolding repo.
+
+**Steps:**
+
+1. Check if a `.git` directory exists and if it has a remote pointing to the VibeOrg scaffolding repo:
+   ```
+   git remote -v
+   ```
+   Look for any remote URL containing "vibeorg" (case-insensitive).
+
+2. **If a scaffolding remote is found:**
+   - Remove the existing git history:
+     ```
+     rm -rf .git
+     ```
+   - Initialize a fresh repo:
+     ```
+     git init
+     ```
+   - Verify `.gitignore` is comprehensive (must include `.env`, `.env.local`, `.env.production`, `node_modules/`, `scheduler/logs/`, `db/*.db`, `db/*.db-journal`, `db/*.db-wal`, `dashboard/.next/`, `dashboard/out/`, `.DS_Store`, `Thumbs.db`, `.claude/`). If any entries are missing, append them.
+   - Stage and commit the scaffolding files:
+     ```
+     git add .
+     git commit -m "Initial commit: VibeOrg project scaffolded"
+     ```
+   - Inform the user:
+     "I've disconnected this project from the VibeOrg template repo and initialized a fresh git history. I'll help you connect it to your own repository at the end of setup."
+
+3. **If `.git` doesn't exist** (user downloaded a zip or used degit):
+   - Initialize a fresh repo:
+     ```
+     git init
+     ```
+   - Same `.gitignore` check and initial commit as above.
+   - Inform the user:
+     "I've initialized a git repo for your project."
+
+4. **If `.git` exists but the remote is NOT the scaffolding repo** (user already set up their own repo):
+   - Do nothing. The user has already handled this.
+
+5. Proceed to Phase 1.
+
+---
+
 ## Phase 1: Business Context
 
-**Entry conditions:** `/init` was triggered, `vibeorg.config.json` has empty `project.name`.
+**Entry conditions:** Phase 0 complete (or skipped). `vibeorg.config.json` has empty `project.name`.
 
 **Your task:**
 Ask the user to describe their project or business in a few sentences. Then ask what they want their AI agent team to accomplish.
@@ -346,6 +397,46 @@ Write `onboarding/build-manifest.json` documenting every file that was generated
   }
 }
 ```
+
+**Step 7i — Connect to Your Repository:**
+
+After everything is built and the user has seen the dashboard:
+
+Ask: "Last step — want to connect this project to your own GitHub repo?"
+
+**Option A: User has an existing empty repo.**
+Ask for the URL (HTTPS or SSH). Then run:
+```
+git remote add origin <url>
+git add .
+git commit -m "VibeOrg setup complete: agents, dashboard, and workflows configured"
+git push -u origin main
+```
+Confirm: "Your project is now connected to `<url>`. All future commits go to your repo."
+
+**Option B: Create a new repo via GitHub CLI.**
+Check if `gh` CLI is installed and authenticated:
+```
+gh auth status
+```
+If available, ask for the repo name and visibility:
+"What should I call the repo? And should it be private or public?"
+
+Then run:
+```
+git add .
+git commit -m "VibeOrg setup complete: agents, dashboard, and workflows configured"
+gh repo create <name> --private --source=. --push
+```
+Confirm: "Created `github.com/<user>/<name>` and pushed your project."
+
+**Option C: Skip for now.**
+If the user wants to do it later, tell them:
+"No problem. Whenever you're ready, run:
+`git remote add origin <your-repo-url>` then `git push -u origin main`"
+
+Store a reminder in `memory/shared/PROJECT_CONTEXT.md`:
+"Note: No remote repository connected yet."
 
 ---
 

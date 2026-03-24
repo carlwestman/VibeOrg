@@ -1,23 +1,28 @@
+# Environment and secrets
+.env
+.env.local
+.env.production
+
 # Dependencies
 node_modules/
 
-# Environment
-.env
-.env.local
-
-# Next.js
+# Next.js build output
 .next/
 out/
+dashboard/.next/
+dashboard/out/
 
 # Build
 dist/
 build/
 
 # Scheduler logs
-scheduler/logs/*.log
+scheduler/logs/
 
-# SQLite database
+# SQLite database (if enabled)
 db/*.db
+db/*.db-journal
+db/*.db-wal
 
 # OS files
 .DS_Store
@@ -26,6 +31,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Claude Code local data / channel plugin data
+.claude/
 
 # Output archives (keep latest, archive can grow large)
 # Uncomment if archive grows too large for git:
