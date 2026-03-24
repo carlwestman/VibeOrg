@@ -5,5 +5,24 @@
     "conflict_resolution": "Orchestrator decides. Log disagreement in memory/shared/DECISIONS_LOG.md.",
     "memory_update_trigger": "After every completed task.",
     "output_validation": "All outputs must validate against the agent's OUTPUT_SCHEMA.json."
+  },
+  "_agent_schema_reference": {
+    "_comment": "Each agent in the agents array should have these fields. This object is a reference, not used at runtime.",
+    "id": "string — unique agent identifier (lowercase, no spaces)",
+    "name": "string — display name (e.g., IRIS)",
+    "role": "string — role title (e.g., Research & Analysis)",
+    "description": "string — what this agent does",
+    "persona_file": "string — path to PERSONA.md",
+    "memory_path": "string — path to memory.md",
+    "output_dir": "string — path to outputs directory",
+    "output_schema": "string — path to OUTPUT_SCHEMA.json",
+    "capabilities": ["array of capability strings"],
+    "receives_from": ["array of agent IDs that send work to this agent"],
+    "hands_off_to": ["array of agent IDs this agent sends work to"],
+    "tools": ["array of general tool names (web_search, file_read, file_write, etc.)"],
+    "mcp_tools": ["array of MCP server keys from .mcp.json assigned to this agent"],
+    "mcp_tool_notes": {
+      "server-key": "string — when and how this agent should use this MCP server"
+    }
   }
 }

@@ -253,3 +253,81 @@ Recommend SQLite when ANY of these apply:
 - **Dashboard performance**: the dashboard needs fast filtering/sorting of large datasets
 
 If SQLite is enabled, it mirrors the filesystem — files remain the source of truth, SQLite is a read-optimized index. See spec Section 15 for schema details.
+
+---
+
+## TOOLS.md Generation Pattern
+
+When generating an agent's `TOOLS.md` during onboarding, include the following for each assigned MCP server.
+
+### Structure
+
+```markdown
+# [Agent Name] — Tools Reference
+
+## [Server Name] ([purpose])
+Brief description of what this server provides and when this agent should use it.
+
+**Tools:**
+- `server:tool_name` — What it does. Key parameters. When to use it.
+- `server:other_tool` — What it does. Common patterns.
+
+**Typical workflow:**
+1. [First call] — why
+2. [Second call] — using output from step 1
+3. [Third call] — final result
+
+**Do NOT use for:**
+- [Clarify boundaries — what other agent or tool should be used instead]
+```
+
+### Example: Borsdata for a Research Agent
+
+```markdown
+# IRIS — Tools Reference
+
+## Borsdata (Nordic equity data)
+Primary source for all Nordic stock market data. Covers instruments listed
+on Nasdaq Stockholm, Oslo Børs, Copenhagen, and Helsinki exchanges.
+
+**Tools:**
+- `borsdata:search_instruments` — Find instruments by name or ticker.
+  Always call this first to get the instrumentId needed for other calls.
+- `borsdata:get_stock_prices` — Historical daily OHLCV data. Use for
+  price charts and trend analysis.
+- `borsdata:get_reports` — Annual, R12, and quarterly financial statements.
+  Specify report_type: "year", "r12", or "quarter".
+- `borsdata:get_kpi` — Single KPI value for one instrument. Use kpiId
+  from the KPI reference list.
+- `borsdata:get_kpi_history` — Historical KPI values. Useful for tracking
+  valuation trends (P/E, EV/EBITDA) over time.
+
+**Typical workflow:**
+1. `search_instruments` with company name → get instrumentId
+2. `get_stock_prices` for recent price data
+3. `get_reports` for latest financials
+4. `get_kpi_history` for valuation multiples trend
+
+**Do NOT use for:**
+- Non-Nordic equities (use web search instead)
+- Real-time intraday prices (Borsdata provides end-of-day data)
+- News or qualitative analysis (use web search)
+
+## Web Search (general research)
+Use for news, press releases, qualitative research, and any data not
+covered by Borsdata.
+
+**Tools:**
+- `web_search` — Search the web for current information.
+
+**Do NOT use for:**
+- Nordic equity fundamentals (use Borsdata — it's more structured and reliable)
+```
+
+### Guidelines
+
+- Include ALL assigned MCP servers, not just the primary one
+- Include built-in tools (web search, file read/write) if the agent uses them
+- Each server section should have: tools list, typical workflow, and do-not-use boundaries
+- Scope boundaries are critical — they prevent agents from stepping on each other's territory
+- If the user gave specific guidance during onboarding (e.g., "IRIS only uses run_stress_test from the optimizer"), reflect that in the do-not-use section

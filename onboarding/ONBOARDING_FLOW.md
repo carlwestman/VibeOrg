@@ -217,18 +217,169 @@ If the use case involves quantitative data, ask:
 **Entry conditions:** Phase 4 complete.
 
 **Your task:**
-Configure external service integrations.
+Configure MCP servers, assign tools to agents, and set up integrations.
 
-**Steps:**
-1. Review the agents' capabilities — which ones need external services?
-2. Ask: "Do any of your agents need access to external services? Common ones include: web search, Slack, email, Google Drive, GitHub, specific APIs."
-3. For each integration:
-   - Configure the MCP server entry in `.mcp.json`
-   - Add required environment variables to `.env.example`
-   - Walk the user through getting API keys
-   - Test connectivity where possible
-4. Ask about scheduled data fetches: "Should any data be fetched automatically on a schedule? (e.g., market data every morning, news feeds hourly)"
-5. Configure scheduler tasks for any scheduled fetches
+**Step 5a — MCP Server Configuration:**
+
+Ask the user:
+"Do you have any MCP servers or external tools your agents should use? You can give me GitHub repo URLs, npm package names, or describe what you need."
+
+The user may respond with:
+- GitHub URLs (e.g., "github.com/carlwestman/borsdata-mcp-server")
+- Plain descriptions (e.g., "I need Slack integration and stock data")
+- A mix of both
+
+**GitHub Auto-Discovery:**
+
+For each GitHub URL the user provides:
+
+1. **Fetch the README** using web search or web fetch.
+   Try in order:
+   - Fetch: `https://raw.githubusercontent.com/{user}/{repo}/main/README.md`
+   - Fetch: `https://raw.githubusercontent.com/{user}/{repo}/master/README.md`
+   - Search: "github.com/{user}/{repo}" and read the repo page
+
+   Also check for:
+   - `package.json` (for dependencies, scripts, entry point)
+   - `.env.example` (for required environment variables)
+   - `src/index.ts` or `index.js` (for tool definitions if README is sparse)
+
+2. **Extract key information** from the README and repo files:
+   - Server purpose: what domain/data does it cover?
+   - Tool list: names and descriptions of all exposed tools/functions
+   - API keys: any required environment variables or authentication
+   - Runtime: Node, Bun, Python? Any build step needed?
+   - Installation: can it run via `npx github:user/repo` or needs cloning?
+
+3. **Present a summary** to the user:
+   "I found borsdata-mcp-server — 27 tools for Nordic equity data including instruments, prices, reports, KPIs, insider holdings, and more. It needs a BORSDATA_API_KEY. Want me to add it?"
+
+4. **Generate the `.mcp.json` entry:**
+
+   For repos that can run via npx (have a proper `package.json` with bin):
+   ```json
+   {
+     "borsdata": {
+       "command": "npx",
+       "args": ["-y", "github:user/repo"],
+       "env": { "BORSDATA_API_KEY": "${BORSDATA_API_KEY}" }
+     }
+   }
+   ```
+
+   For repos that need cloning and building:
+   ```json
+   {
+     "borsdata": {
+       "command": "node",
+       "args": ["./mcp-servers/borsdata-mcp-server/dist/index.js"],
+       "env": { "BORSDATA_API_KEY": "${BORSDATA_API_KEY}" }
+     }
+   }
+   ```
+   Inform the user: "This server needs to be built locally. I'll clone it to `./mcp-servers/` and run the build step."
+   Then run:
+   ```
+   mkdir -p mcp-servers
+   cd mcp-servers && git clone <repo-url>
+   cd <repo-name> && npm install && npm run build
+   ```
+
+   For remote URL-based servers (e.g., Slack, Gmail):
+   ```json
+   {
+     "slack": { "type": "url", "url": "https://mcp.slack.com/sse" }
+   }
+   ```
+
+5. **Handle API keys:**
+   - Add the key name to `.env.example` with a comment explaining where to get it
+   - Ask the user: "Paste your [service] API key:"
+   - Save to `.env`
+   - If the README mentions where to get the key, tell the user
+
+6. **Handle discovery failures gracefully:**
+   If the README is sparse or missing:
+   - Ask: "I couldn't find a detailed tool listing in the README. Can you tell me what this server does and what tools it provides?"
+   - Or: "Want me to try starting the server to discover its tools? I'll run `claude /mcp` after configuring it."
+   If the repo is private:
+   - "I can't access that repo — it may be private. Can you describe what it does, or paste the relevant section of the README here?"
+
+For plain descriptions (no URL), suggest servers from the common patterns table below, or ask the user if they have a specific server in mind.
+
+**Common MCP Server Patterns:**
+
+When the user describes their needs without providing URLs, suggest relevant MCP servers:
+
+| User Need | Suggested MCP Server | Configuration |
+|-----------|---------------------|---------------|
+| "Slack integration" | Slack MCP | `type: "url"`, `url: "https://mcp.slack.com/sse"` |
+| "Email" | Gmail MCP | `type: "url"`, `url: "https://gmail.mcp.claude.com/mcp"` |
+| "Calendar" | Google Calendar MCP | `type: "url"`, `url: "https://gcal.mcp.claude.com/mcp"` |
+| "File system access" | Filesystem MCP | `npx @modelcontextprotocol/server-filesystem` |
+| "Database access" | Postgres/SQLite MCP | `npx @modelcontextprotocol/server-postgres` |
+| "Web scraping" | Puppeteer MCP | `npx @modelcontextprotocol/server-puppeteer` |
+| "GitHub" | GitHub MCP | `npx @modelcontextprotocol/server-github` |
+
+Also check: https://github.com/modelcontextprotocol/servers for the official server list. The user may also have their own MCP servers on GitHub — always ask.
+
+**Tool-to-Agent Assignment:**
+
+After ALL MCP servers are configured, present the full tool landscape and propose assignments in a single conversational turn:
+
+"Here's everything your agents can work with:
+
+ MCP Servers:
+ - [server] ([N] tools) — [purpose]
+
+ Built-in tools:
+ - web search — Web research
+ - file read/write — Filesystem access
+
+ Your agents:
+ - [AGENT] — [Role]
+
+ I'd suggest this mapping:
+
+ [AGENT] ([Role]):
+   - [server] — [why this agent needs it]
+   - Typical flow: [tool1] → [tool2] → [tool3]
+
+ Does this look right? Want to change anything?"
+
+Let the user adjust. They might say things like:
+- "IRIS should also have portfolio-optimizer for quick stress tests" → Add, scoped to specific tools only
+- "Only FINN should use the optimizer" → Restrict to FINN
+- "Don't give EDNA web search" → Remove from EDNA
+- "Give everyone borsdata" → Add to all with role-appropriate usage notes
+
+After each adjustment, confirm the updated mapping before proceeding.
+
+**Usage Guidance Per Agent:**
+
+For each agent-tool pairing, generate specific guidance covering:
+- **When to use it**: "Use borsdata when researching Nordic equities. For non-Nordic stocks, use web search instead."
+- **Typical call sequence**: "Always call search_instruments first to get the instrumentId, then use it for all subsequent calls."
+- **Scope boundaries**: "IRIS uses portfolio-optimizer ONLY for run_stress_test when evaluating a new position. For full portfolio optimization, hand off to FINN."
+- **What NOT to do**: "Don't use get_latest_prices for research — that's end-of-day data only."
+
+Present the proposed guidelines and ask: "I've drafted usage guidelines for each agent. Should I adjust any of these?"
+
+The user's answers flow directly into each agent's `TOOLS.md` and into the `mcp_tool_notes` field in `agents.json`.
+
+**Generate Configuration Files:**
+
+After the MCP conversation is complete:
+1. Write/update `.mcp.json` with all configured servers
+2. Update `agents/agents.json` with `mcp_tools` arrays and `mcp_tool_notes`
+3. Generate `agents/[name]/TOOLS.md` for each agent (see `onboarding/OUTPUT_DESIGN_GUIDE.md` for the TOOLS.md pattern)
+4. Create/update `MCP_SERVERS.md` with the full server reference
+5. Update `.env.example` and `.env` with all required keys
+
+**Scheduled data fetches:**
+
+After MCP servers are configured, ask: "Should any data be fetched automatically on a schedule? (e.g., market data every morning, news feeds hourly)"
+Configure scheduler tasks for any scheduled fetches.
 
 **Step 5b — Remote Access via Messaging (Telegram/Discord):**
 

@@ -96,13 +96,14 @@ Configure cloud deployment. Read `onboarding/ONBOARDING_FLOW.md` Phase 6 instruc
 When the user gives you a task (not a slash command):
 
 1. **Classify the task** against agent capabilities in `agents/agents.json`
-2. **Single agent match** → delegate directly using the Delegation Protocol
-3. **Multi-agent task** → create an ad-hoc workflow:
+2. **Check MCP tool requirements**: if the task requires a specific MCP tool, check each agent's `mcp_tools` array in `agents.json`. Route to an agent that has the tool AND whose role best matches the task.
+3. **Single agent match** → delegate directly using the Delegation Protocol
+4. **Multi-agent task** → create an ad-hoc workflow:
    - Determine execution order (who needs to go first)
    - Execute sequentially, passing output file paths between agents
    - Synthesize results at the end
-4. **Meta task** (about the team, config, process, or the system itself) → handle directly
-5. **Ambiguous** → ask the user for clarification before proceeding
+5. **Meta task** (about the team, config, process, or the system itself) → handle directly
+6. **Ambiguous** → ask the user for clarification before proceeding
 
 ---
 
@@ -111,11 +112,13 @@ When the user gives you a task (not a slash command):
 When spawning a subagent via the Agent tool, follow these steps exactly:
 
 1. Read the agent's `PERSONA.md`
-2. Read the agent's `memory/agents/[name]/memory.md`
-3. Read `memory/shared/PROJECT_CONTEXT.md`
-4. Identify any input files the task requires
-5. Compose the agent prompt:
+2. Read the agent's `TOOLS.md` (if it exists)
+3. Read the agent's `memory/agents/[name]/memory.md`
+4. Read `memory/shared/PROJECT_CONTEXT.md`
+5. Identify any input files the task requires
+6. Compose the agent prompt:
    - **Identity block**: paste the full PERSONA.md content
+   - **Available tools and usage guidance**: from TOOLS.md — include which MCP tools are available, typical call sequences, and scope boundaries
    - **Memory context**: paste relevant memory (agent's + shared context)
    - **Task instructions**: specific, actionable description of what to do
    - **Input references**: file paths to read (NOT inline content)
@@ -153,6 +156,22 @@ Read `memory/MEMORY_PROTOCOL.md` for the complete protocol. Key rules:
 - All outputs must conform to the agent's `OUTPUT_SCHEMA.json`
 - The `meta` section is required: id, agent, timestamp, task_id, status, version, tags
 - The `handoff` section is present only when passing output to another agent
+
+---
+
+## Adding MCP Servers After Setup
+
+When the user says something like "add this MCP server: github.com/user/repo" or "I want to connect a new tool":
+
+1. Run the same GitHub auto-discovery flow as during onboarding:
+   - Fetch the README, extract tools, identify API keys
+   - Present summary, ask for confirmation
+2. Generate the `.mcp.json` entry and handle API keys
+3. Ask which agent(s) should get access and how they should use it
+4. Update `.mcp.json`, `agents/agents.json` (mcp_tools + mcp_tool_notes), the relevant `TOOLS.md` files, and `MCP_SERVERS.md`
+5. Remind the user: "Restart Claude Code for the new MCP server to be available. Run `claude` again in this project."
+
+Read `onboarding/ONBOARDING_FLOW.md` Phase 5 for the detailed auto-discovery and assignment flow.
 
 ---
 

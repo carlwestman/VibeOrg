@@ -59,6 +59,8 @@ export interface Agent {
   receives_from: string[]
   hands_off_to: string[]
   tools: string[]
+  mcp_tools?: string[]
+  mcp_tool_notes?: Record<string, string>
 }
 
 export interface AgentRegistry {
