@@ -1,0 +1,33 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dashboard dependencies
+        run: npm install
+
+      - name: Install scheduler dependencies
+        run: cd scheduler && npm install
+
+      - name: TypeScript type check
+        run: cd dashboard && npx tsc --noEmit
+
+      - name: Build dashboard
+        run: npm run build
+
+      - name: Run schema validation
+        run: npm run validate

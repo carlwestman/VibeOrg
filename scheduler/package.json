@@ -1,0 +1,14 @@
+{
+  "name": "vibeorg-scheduler",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VibeOrg task scheduler — runs automated data fetches and agent workflows",
+  "main": "scheduler.js",
+  "scripts": {
+    "start": "node scheduler.js"
+  },
+  "dependencies": {
+    "node-cron": "^3.0.0",
+    "dotenv": "^16.4.0"
+  }
+}

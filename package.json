@@ -1,0 +1,20 @@
+{
+  "name": "vibeorg",
+  "version": "0.1.0",
+  "description": "Open-source scaffolding framework for AI agent teams in Claude Code",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "dashboard"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=dashboard",
+    "build": "npm run build --workspace=dashboard",
+    "scheduler": "node scheduler/scheduler.js",
+    "validate": "node scripts/validate-schemas.js",
+    "seed": "node scripts/seed-test-data.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

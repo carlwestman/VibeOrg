@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "{{AGENT_NAME}} Output",
+  "description": "Output schema for {{AGENT_NAME}} ({{ROLE_TITLE}})",
+  "type": "object",
+  "required": ["meta", "content"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["id", "agent", "timestamp", "task_id", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique output ID: {{AGENT_ID}}-YYYYMMDD-HHMMSS"
+        },
+        "agent": {
+          "type": "string",
+          "const": "{{AGENT_ID}}"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "task_id": {
+          "type": "string",
+          "description": "ID of the task that produced this output"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "final", "superseded"]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "{{AGENT_NAME}}-specific content. Customize this section based on the agent's output type.",
+      "properties": {
+        "_comment": "Replace this with domain-specific fields from OUTPUT_DESIGN_GUIDE.md"
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "description": "Present when this output is being passed to another agent",
+      "properties": {
+        "target_agent": { "type": "string" },
+        "source_file": { "type": "string" },
+        "task_completed": { "type": "string" },
+        "key_findings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "open_questions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "suggested_next_steps": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

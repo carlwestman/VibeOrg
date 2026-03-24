@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "project": {
+    "name": "",
+    "description": "",
+    "created": ""
+  },
+  "settings": {
+    "use_sqlite": false,
+    "memory_max_entries_per_agent": 100,
+    "memory_summarize_after": 50,
+    "output_archive_days": 90,
+    "dashboard_port": 3000,
+    "scheduler_enabled": false,
+    "deployment_mode": "local"
+  },
+  "theme": {
+    "direction": "modern-neutral",
+    "primary_color": "#6366f1",
+    "accent_color": "#8b5cf6",
+    "mode": "dark",
+    "density": "comfortable",
+    "font_body": "Inter",
+    "font_mono": "JetBrains Mono",
+    "border_radius": "md",
+    "custom_notes": ""
+  },
+  "data_sources": []
+}

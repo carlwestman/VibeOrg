@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "${DASHBOARD_PORT:-3000}:3000"
+    volumes:
+      - ../outputs:/app/outputs
+      - ../memory:/app/memory
+      - ../data:/app/data
+      - ../agents:/app/agents
+      - ../workflows:/app/workflows
+      - ../vibeorg.config.json:/app/vibeorg.config.json
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command: ["node", "scheduler/scheduler.js"]
+    volumes:
+      - ../outputs:/app/outputs
+      - ../memory:/app/memory
+      - ../data:/app/data
+      - ../agents:/app/agents
+      - ../workflows:/app/workflows
+      - ../scheduler:/app/scheduler
+      - ../vibeorg.config.json:/app/vibeorg.config.json
+    env_file:
+      - ../.env
+    restart: unless-stopped

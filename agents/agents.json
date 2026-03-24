@@ -1,0 +1,9 @@
+{
+  "agents": [],
+  "interaction_rules": {
+    "handoff_protocol": "Always include a structured handoff summary with: task_completed, key_findings, open_questions, suggested_next_steps. Data passes via file references, not inline content.",
+    "conflict_resolution": "Orchestrator decides. Log disagreement in memory/shared/DECISIONS_LOG.md.",
+    "memory_update_trigger": "After every completed task.",
+    "output_validation": "All outputs must validate against the agent's OUTPUT_SCHEMA.json."
+  }
+}
