@@ -23,6 +23,7 @@ VibeOrg is to AI agent teams what `create-next-app` is to web projects — clone
   - [Dashboard](#dashboard)
   - [Scheduler](#scheduler)
 - [Commands Reference](#commands-reference)
+- [Manage from Your Phone](#manage-from-your-phone)
 - [Daily Usage](#daily-usage)
 - [Configuration](#configuration)
 - [Cloud Deployment](#cloud-deployment)
@@ -430,6 +431,24 @@ All commands are typed in Claude Code within the project directory.
 | `/memory` | Search or display institutional memory. With a search term, greps all memory files. |
 | `/dashboard` | Start or restart the Next.js dashboard dev server. |
 | `/setup-deploy` | Configure cloud deployment — generates Docker configs and setup guides. |
+
+---
+
+## Manage from Your Phone
+
+VibeOrg supports Claude Code Channels, letting you message your agent team from Telegram or Discord. Send instructions, check status, review outputs, and receive notifications — all from your phone.
+
+```
+You (Telegram): "Run the morning research cycle"
+VibeOrg: "⏳ Starting morning cycle..."
+VibeOrg: "✅ IRIS found 3 developments. FINN updated 2 positions."
+VibeOrg: "📄 Morning briefing ready."
+[sends briefing file]
+```
+
+Set up during `/init` onboarding (Phase 5), or see [deploy/DEPLOY.md](deploy/DEPLOY.md) for manual setup on a VPS.
+
+**Requirements:** Claude Code v2.1.80+ and a claude.ai Pro subscription. The scheduler can also send one-way Telegram notifications for task completion/failure independently of the channel session.
 
 ---
 

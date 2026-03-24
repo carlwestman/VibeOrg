@@ -179,6 +179,46 @@ Configure external service integrations.
 4. Ask about scheduled data fetches: "Should any data be fetched automatically on a schedule? (e.g., market data every morning, news feeds hourly)"
 5. Configure scheduler tasks for any scheduled fetches
 
+**Step 5b — Remote Access via Messaging (Telegram/Discord):**
+
+Ask the user:
+"Would you like to manage your agent team from your phone? Claude Code Channels lets you message a Telegram or Discord bot that connects directly into this session. Setup takes about 5 minutes."
+
+If yes, ask which platform (Telegram recommended for simplicity).
+
+**Telegram Setup (guide the user through this):**
+
+1. "Open Telegram and search for @BotFather. Send /newbot"
+2. "Give your bot a display name (e.g., 'My VibeOrg Team') and a username ending in 'bot' (e.g., 'myvibeorg_bot')"
+3. "BotFather will give you a bot token. Paste it here."
+4. Save the token to `.env` as `TELEGRAM_BOT_TOKEN`
+5. Install the Telegram channel plugin:
+   ```bash
+   claude /plugin install telegram@claude-plugins-official
+   ```
+6. Explain: "Now when you start Claude Code, add the --channels flag:
+   `claude --channels plugin:telegram@claude-plugins-official`"
+7. "Open a DM with your bot in Telegram. It will reply with a 6-character pairing code. Enter that code here in the terminal."
+8. Verify the connection works by having the user send a test message
+9. Update `memory/shared/PROJECT_CONTEXT.md` to note that Telegram channel is configured
+10. Update `vibeorg.config.json` with the channels configuration
+
+If the user chose remote/VPS deployment:
+- Explain that the session must run inside tmux or screen to survive disconnects
+- Note this will be covered in detail in `deploy/DEPLOY.md`
+- Add `TELEGRAM_BOT_TOKEN` to `.env.example`
+
+**Discord Setup (if chosen instead):**
+
+1. "Go to discord.com/developers/applications and create a New Application"
+2. "Under the Bot tab, click Reset Token and copy the token. Paste it here."
+3. "Enable the Message Content Intent toggle under Privileged Gateway Intents"
+4. "Use this URL to invite the bot to your server: [generate OAuth2 URL with bot scope and Send Messages permission]"
+5. Save token to `.env` as `DISCORD_BOT_TOKEN`
+6. Install and configure similarly to Telegram
+
+If the user declines channels, skip this sub-step entirely.
+
 **Confirmation gate:**
 "I've configured these integrations: [list]. All API keys are set up. Ready to proceed?"
 
@@ -186,6 +226,7 @@ Configure external service integrations.
 - `.mcp.json` configuration (draft)
 - `.env.example` additions (draft)
 - Scheduler task definitions (draft)
+- Channel configuration in `vibeorg.config.json` (if set up)
 
 **Exit conditions:** User confirms integrations are set up.
 

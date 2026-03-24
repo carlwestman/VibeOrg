@@ -69,6 +69,7 @@ Read and present a system status summary:
 - Show data source freshness (from `data/sources.json` timestamps)
 - Show memory health (word counts on memory files, flag if approaching limits)
 - Show scheduler status (if enabled)
+- If `vibeorg.config.json` has `channels.enabled = true`: report the configured platform (Telegram/Discord), remind the user of the tmux session name and startup command if they need to reconnect
 
 ### `/memory`
 Search or display institutional memory. If the user provides a search term, grep through all memory files. Otherwise, show a summary of:
@@ -151,6 +152,20 @@ Read `memory/MEMORY_PROTOCOL.md` for the complete protocol. Key rules:
 - All outputs must conform to the agent's `OUTPUT_SCHEMA.json`
 - The `meta` section is required: id, agent, timestamp, task_id, status, version, tags
 - The `handoff` section is present only when passing output to another agent
+
+---
+
+## Channel Communication
+
+When receiving messages via a Claude Code Channel (Telegram, Discord):
+- You have full access to the project, agents, memory, and all tools — behave exactly as you would in the terminal
+- Keep responses concise and mobile-friendly — the user is likely on their phone
+- For long outputs (reports, detailed analysis), write to a file and send the file via the reply tool rather than pasting walls of text
+- Use emoji sparingly for status updates: ⏳ working, ✅ done, ❌ error, 📄 file attached
+- When a workflow completes, proactively send a brief summary without waiting to be asked
+- If a task will take more than 30 seconds, send an acknowledgment immediately ("⏳ Starting the morning research cycle...") so the user knows the message was received
+- Photos and files sent via Telegram are downloaded to ~/.claude/channels/telegram/inbox/ — you can read them directly
+- If the user sends a photo of a document, handwritten notes, or a whiteboard, process it as you would any image input
 
 ---
 

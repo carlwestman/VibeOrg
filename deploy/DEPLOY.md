@@ -124,7 +124,110 @@ sudo ln -s /etc/nginx/sites-available/vibeorg /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-## Step 6: Verify Everything Works
+## Step 6: Set Up Remote Access via Telegram (Optional)
+
+This lets you manage your agent team from your phone. You'll message a Telegram bot, and your messages go directly into the Claude Code session running on this server.
+
+### Prerequisites
+- Bun runtime installed on the server (`curl -fsSL https://bun.sh/install | bash`)
+- A Telegram account on your phone
+- Your bot token (from the /init setup, stored in .env)
+- Claude Code v2.1.80+ and a claude.ai Pro subscription
+
+### Create the Bot (skip if already done during /init)
+1. Open Telegram on your phone
+2. Search for @BotFather and start a chat
+3. Send `/newbot`
+4. Choose a display name (e.g., "My VibeOrg Team")
+5. Choose a username ending in `bot` (e.g., `myvibeorg_bot`)
+6. Copy the token BotFather gives you
+7. On the server, add it to your .env file:
+   ```bash
+   echo 'TELEGRAM_BOT_TOKEN=your-token-here' >> .env
+   ```
+
+### Install the Channel Plugin
+```bash
+claude /plugin install telegram@claude-plugins-official
+```
+
+### Start Claude Code with Channels (persistent)
+
+This is the critical part. Claude Code must stay running for messages to arrive. We use tmux to keep the session alive even when you disconnect from SSH.
+
+```bash
+# Create a persistent tmux session named "vibeorg"
+tmux new-session -d -s vibeorg
+
+# Send the claude startup command into that session
+tmux send-keys -t vibeorg 'cd /path/to/your/vibeorg-project && source .env && claude --channels plugin:telegram@claude-plugins-official' Enter
+```
+
+### Pair Your Phone
+1. Open Telegram on your phone
+2. Find your bot and send any message (e.g., "hello")
+3. The bot replies with a 6-character pairing code
+4. Attach to the tmux session to enter the code:
+   ```bash
+   tmux attach -t vibeorg
+   ```
+5. Enter the pairing code when prompted
+6. Detach from tmux: press Ctrl+B, then D
+
+### Verify It Works
+Send a message to your bot from Telegram:
+```
+You: "What's the status of the team?"
+Bot: "✅ All 3 agents configured. Last activity: IRIS ran 2 hours ago..."
+```
+
+### Managing the Session
+
+```bash
+# Check if the session is running
+tmux has-session -t vibeorg 2>/dev/null && echo "Running" || echo "Not running"
+
+# View what's happening (read-only)
+tmux attach -t vibeorg
+# Detach without stopping: Ctrl+B, then D
+
+# Restart the session if it died
+tmux kill-session -t vibeorg 2>/dev/null
+tmux new-session -d -s vibeorg
+tmux send-keys -t vibeorg 'cd /path/to/your/vibeorg-project && source .env && claude --channels plugin:telegram@claude-plugins-official' Enter
+```
+
+### Important Limitations
+- **Messages sent while the session is down are lost.** The bot only sees messages in real-time. If tmux crashes or the server reboots, messages sent during downtime will not be delivered.
+- **One user only.** The pairing code binds the channel to your Telegram user ID. Messages from anyone else are silently ignored.
+- **Requires claude.ai subscription.** Channels requires Pro or higher. API key authentication does not work with channels. The scheduler can still use API key auth for its own headless invocations.
+- **Photo handling.** Photos sent via Telegram are downloaded to ~/.claude/channels/telegram/inbox/ on the server. Claude can read them directly. Send as "File" (long-press) if you need the uncompressed original.
+
+### Advanced: Auto-restart on Reboot
+
+For production deployments, consider a systemd service to restart the tmux session on server reboot:
+
+```bash
+# /etc/systemd/system/vibeorg-channels.service
+[Unit]
+Description=VibeOrg Claude Code Channels Session
+After=network.target
+
+[Service]
+Type=forking
+User=your-user
+ExecStart=/usr/bin/tmux new-session -d -s vibeorg -c /path/to/vibeorg 'source .env && claude --channels plugin:telegram@claude-plugins-official'
+ExecStop=/usr/bin/tmux kill-session -t vibeorg
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
+
+## Step 7: Verify Everything Works
 
 - [ ] Dashboard loads in the browser
 - [ ] Status page shows your agents and their state

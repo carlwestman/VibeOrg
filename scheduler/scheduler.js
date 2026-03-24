@@ -17,6 +17,7 @@ const cron = require('node-cron')
 const fs = require('fs')
 const path = require('path')
 const { exec } = require('child_process')
+const { notify } = require('./notify')
 
 // Load environment variables from project root
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') })
@@ -234,8 +235,10 @@ function start() {
           default:
             log('error', `Unknown task type: ${task.type}`, task.id)
         }
+        await notify(`✅ *${task.name}* completed successfully.`)
       } catch (err) {
         log('error', `Unhandled error: ${err.message}`, task.id)
+        await notify(`❌ *${task.name}* failed: ${err.message}`)
       }
     })
   }

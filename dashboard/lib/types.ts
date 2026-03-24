@@ -29,6 +29,13 @@ export interface VibeOrgConfig {
     custom_notes: string
   }
   data_sources: DataSource[]
+  channels?: {
+    enabled: boolean
+    platform: string
+    plugin: string
+    startup_command: string
+    tmux_session_name: string
+  }
 }
 
 export interface DataSource {

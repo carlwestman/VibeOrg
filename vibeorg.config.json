@@ -25,5 +25,12 @@
     "border_radius": "md",
     "custom_notes": ""
   },
-  "data_sources": []
+  "data_sources": [],
+  "channels": {
+    "enabled": false,
+    "platform": "",
+    "plugin": "",
+    "startup_command": "",
+    "tmux_session_name": "vibeorg"
+  }
 }
